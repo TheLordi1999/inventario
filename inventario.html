@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f5f7fb">
+    <title>Inventario | Panel de control</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="/" aria-label="Inicio de Inventario">
+                <span class="brand-mark" aria-hidden="true">I</span>
+                <span>inventario<span class="brand-dot">.</span></span>
+            </a>
+            <div class="sidebar-label">GESTIÓN</div>
+            <a class="nav-link active" href="#inventario">
+                <span class="nav-icon" aria-hidden="true">▦</span> Productos
+            </a>
+            <div class="sidebar-note">
+                <span class="note-icon" aria-hidden="true">✦</span>
+                <strong>Todo bajo control</strong>
+                <p>Administra tus productos y mantén tu inventario al día.</p>
+            </div>
+            <div class="sidebar-footer"><span class="status-dot"></span> Datos guardados localmente</div>
+        </aside>
+
+        <main class="main-content" id="inventario">
+            <header class="topbar">
+                <div class="breadcrumb">Panel <span>/</span> <strong>Productos</strong></div>
+                <div class="topbar-right">
+                    <span class="today" id="today"></span>
+                    <button class="button button-secondary logout-button" id="logout" type="button">Cerrar sesión</button>
+                    <span class="avatar">A</span>
+                </div>
+            </header>
+
+            <section class="page-heading">
+                <div>
+                    <p class="eyebrow">RESUMEN DE EXISTENCIAS</p>
+                    <h1>Inventario</h1>
+                    <p class="subtitle">Consulta y administra los productos de tu negocio.</p>
+                </div>
+                <button class="button button-primary" id="add-product" type="button">
+                    <span aria-hidden="true">＋</span> Agregar producto
+                </button>
+            </section>
+
+            <section class="stats-grid" aria-label="Resumen del inventario">
+                <article class="stat-card">
+                    <div class="stat-top"><span class="stat-label">Productos registrados</span><span class="stat-icon icon-purple">▦</span></div>
+                    <strong class="stat-value" id="total-products">0</strong>
+                    <span class="stat-caption">En tu inventario</span>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-top"><span class="stat-label">Unidades disponibles</span><span class="stat-icon icon-blue">▤</span></div>
+                    <strong class="stat-value" id="total-units">0</strong>
+                    <span class="stat-caption">Sumadas en todos los productos</span>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-top"><span class="stat-label">Valor del inventario</span><span class="stat-icon icon-green">$</span></div>
+                    <strong class="stat-value" id="total-value">$0.00</strong>
+                    <span class="stat-caption">Según el precio unitario</span>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-top"><span class="stat-label">Stock bajo</span><span class="stat-icon icon-orange">!</span></div>
+                    <strong class="stat-value" id="low-stock">0</strong>
+                    <span class="stat-caption">Productos que requieren atención</span>
+                </article>
+            </section>
+
+            <section class="inventory-card">
+                <div class="inventory-header">
+                    <div>
+                        <h2>Todos los productos</h2>
+                        <p>Revisa las existencias y los detalles de cada artículo.</p>
+                    </div>
+                    <label class="search-box">
+                        <span aria-hidden="true">⌕</span>
+                        <input id="search" type="search" placeholder="Buscar producto o SKU..." aria-label="Buscar producto o SKU">
+                    </label>
+                </div>
+                <div id="error-message" class="error-message" role="alert" hidden></div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>PRODUCTO</th>
+                                <th>SKU</th>
+                                <th>CATEGORÍA</th>
+                                <th>EXISTENCIAS</th>
+                                <th>PRECIO</th>
+                                <th>ESTADO</th>
+                                <th><span class="sr-only">Acciones</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="product-rows"></tbody>
+                    </table>
+                    <div class="empty-state" id="empty-state">
+                        <span class="empty-icon" aria-hidden="true">▦</span>
+                        <strong id="empty-title">Aún no hay productos</strong>
+                        <p id="empty-description">Agrega tu primer producto para comenzar a llevar el control de tu inventario.</p>
+                        <button class="button button-secondary" id="empty-add" type="button">＋ Agregar producto</button>
+                    </div>
+                </div>
+                <div class="table-footer"><span id="results-count">0 productos</span><span>Los cambios se guardan automáticamente</span></div>
+            </section>
+            <footer class="page-footer">Inventario <span>·</span> Gestión simple para tu negocio</footer>
+        </main>
+    </div>
+
+    <dialog id="product-dialog">
+        <form id="product-form">
+            <div class="dialog-heading">
+                <div><p class="eyebrow">DETALLES DEL ARTÍCULO</p><h2 id="dialog-title">Agregar producto</h2></div>
+                <button class="icon-button" id="close-dialog" type="button" aria-label="Cerrar">×</button>
+            </div>
+            <input type="hidden" id="product-id">
+            <div class="form-grid">
+                <label class="field field-full">Nombre del producto <span>*</span>
+                    <input id="name" name="name" required maxlength="100" placeholder="Ej. Café de origen">
+                </label>
+                <label class="field">SKU <span>*</span>
+                    <input id="sku" name="sku" required maxlength="40" placeholder="Ej. CAF-001">
+                </label>
+                <label class="field">Categoría <span>*</span>
+                    <input id="category" name="category" required maxlength="60" placeholder="Ej. Bebidas">
+                </label>
+                <label class="field">Existencias <span>*</span>
+                    <input id="quantity" name="quantity" type="number" required min="0" step="1" value="0">
+                </label>
+                <label class="field">Stock mínimo <span>*</span>
+                    <input id="min_stock" name="min_stock" type="number" required min="0" step="1" value="5">
+                </label>
+                <label class="field field-full">Precio unitario <span>*</span>
+                    <div class="price-input"><span>$</span><input id="price" name="price" type="number" required min="0" step="0.01" placeholder="0.00"></div>
+                </label>
+            </div>
+            <div class="form-error" id="form-error" role="alert" hidden></div>
+            <div class="dialog-actions">
+                <button class="button button-secondary" id="cancel-dialog" type="button">Cancelar</button>
+                <button class="button button-primary" id="save-product" type="submit">Guardar producto</button>
+            </div>
+        </form>
+    </dialog>
+    <script>
+        const rows = document.getElementById("product-rows");
+        const dialog = document.getElementById("product-dialog");
+        const form = document.getElementById("product-form");
+        const errorMessage = document.getElementById("error-message");
+        const formError = document.getElementById("form-error");
+        let products = [];
+
+        document.getElementById("today").textContent = new Intl.DateTimeFormat("es-MX", {
+            weekday: "long", day: "numeric", month: "long", year: "numeric"
+        }).format(new Date());
+
+        function money(value) {
+            return new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(value);
+        }
+
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>"']/g, character => ({
+                "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+            })[character]);
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.hidden = false;
+        }
+
+        async function request(url, options = {}) {
+            const response = await fetch(url, {
+                ...options,
+                headers: { "Content-Type": "application/json", ...options.headers }
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || "No se pudo completar la operación.");
+            return data;
+        }
+
+        async function loadProducts() {
+            try {
+                const data = await request("/api/items");
+                products = data.items;
+                errorMessage.hidden = true;
+                renderProducts();
+            } catch (error) {
+                showError(`No se pudo cargar el inventario: ${error.message}`);
+            }
+        }
+
+        function renderProducts() {
+            const query = document.getElementById("search").value.trim().toLocaleLowerCase("es");
+            const filtered = products.filter(product =>
+                `${product.name} ${product.sku} ${product.category}`.toLocaleLowerCase("es").includes(query)
+            );
+            const units = products.reduce((sum, product) => sum + product.quantity, 0);
+            const value = products.reduce((sum, product) => sum + product.quantity * product.price, 0);
+            const lowStock = products.filter(product => product.quantity <= product.min_stock).length;
+
+            document.getElementById("total-products").textContent = products.length.toLocaleString("es-MX");
+            document.getElementById("total-units").textContent = units.toLocaleString("es-MX");
+            document.getElementById("total-value").textContent = money(value);
+            document.getElementById("low-stock").textContent = lowStock.toLocaleString("es-MX");
+            document.getElementById("results-count").textContent =
+                `${filtered.length} ${filtered.length === 1 ? "producto" : "productos"}`;
+            document.getElementById("empty-state").hidden = filtered.length > 0;
+            document.getElementById("empty-title").textContent =
+                products.length && query ? "No se encontraron productos" : "Aún no hay productos";
+            document.getElementById("empty-description").textContent =
+                products.length && query
+                    ? "Prueba con otro nombre, SKU o categoría."
+                    : "Agrega tu primer producto para comenzar a llevar el control de tu inventario.";
+
+            rows.innerHTML = filtered.map(product => {
+                const isLow = product.quantity <= product.min_stock;
+                const initials = product.name.trim().split(/\s+/).slice(0, 2).map(word => word[0]).join("").toUpperCase();
+                return `<tr>
+                    <td><div class="product-cell"><span class="product-avatar">${escapeHtml(initials)}</span><strong>${escapeHtml(product.name)}</strong></div></td>
+                    <td><span class="sku">${escapeHtml(product.sku)}</span></td>
+                    <td><span class="category-tag">${escapeHtml(product.category)}</span></td>
+                    <td><strong>${product.quantity.toLocaleString("es-MX")}</strong><span class="stock-min"> mín. ${product.min_stock}</span></td>
+                    <td>${money(product.price)}</td>
+                    <td><span class="status-badge ${isLow ? "status-low" : "status-ok"}"><span></span>${isLow ? "Stock bajo" : "Disponible"}</span></td>
+                    <td><div class="row-actions">
+                        <button class="icon-button edit-button" type="button" data-id="${product.id}" aria-label="Editar ${escapeHtml(product.name)}" title="Editar">✎</button>
+                        <button class="icon-button delete-button" type="button" data-id="${product.id}" aria-label="Eliminar ${escapeHtml(product.name)}" title="Eliminar">×</button>
+                    </div></td>
+                </tr>`;
+            }).join("");
+        }
+
+        function openDialog(product = null) {
+            form.reset();
+            formError.hidden = true;
+            document.getElementById("product-id").value = product ? product.id : "";
+            document.getElementById("dialog-title").textContent = product ? "Editar producto" : "Agregar producto";
+            document.getElementById("save-product").textContent = product ? "Guardar cambios" : "Guardar producto";
+            document.getElementById("quantity").value = product ? product.quantity : 0;
+            document.getElementById("min_stock").value = product ? product.min_stock : 5;
+            for (const field of ["name", "sku", "category", "price"]) {
+                document.getElementById(field).value = product ? product[field] : "";
+            }
+            dialog.showModal();
+            document.getElementById("name").focus();
+        }
+
+        document.getElementById("add-product").addEventListener("click", () => openDialog());
+        document.getElementById("empty-add").addEventListener("click", () => openDialog());
+        document.getElementById("search").addEventListener("input", renderProducts);
+        document.getElementById("close-dialog").addEventListener("click", () => dialog.close());
+        document.getElementById("cancel-dialog").addEventListener("click", () => dialog.close());
+        document.getElementById("logout").addEventListener("click", async () => {
+            try {
+                await request("/api/logout", { method: "POST", body: "{}" });
+                window.location.assign("/login");
+            } catch (error) {
+                showError(`No se pudo cerrar la sesión: ${error.message}`);
+            }
+        });
+
+        rows.addEventListener("click", async event => {
+            const button = event.target.closest("button[data-id]");
+            if (!button) return;
+            const product = products.find(item => item.id === button.dataset.id);
+            if (button.classList.contains("edit-button") && product) {
+                openDialog(product);
+            } else if (button.classList.contains("delete-button") && product &&
+                window.confirm(`¿Eliminar "${product.name}" del inventario?`)) {
+                try {
+                    await request(`/api/items/${encodeURIComponent(product.id)}`, { method: "DELETE" });
+                    await loadProducts();
+                } catch (error) {
+                    showError(`No se pudo eliminar el producto: ${error.message}`);
+                }
+            }
+        });
+
+        form.addEventListener("submit", async event => {
+            event.preventDefault();
+            const id = document.getElementById("product-id").value;
+            const product = {
+                name: document.getElementById("name").value.trim(),
+                sku: document.getElementById("sku").value.trim(),
+                category: document.getElementById("category").value.trim(),
+                quantity: Number(document.getElementById("quantity").value),
+                min_stock: Number(document.getElementById("min_stock").value),
+                price: Number(document.getElementById("price").value)
+            };
+            const saveButton = document.getElementById("save-product");
+            saveButton.disabled = true;
+            formError.hidden = true;
+            try {
+                await request(id ? `/api/items/${encodeURIComponent(id)}` : "/api/items", {
+                    method: id ? "PUT" : "POST",
+                    body: JSON.stringify(product)
+                });
+                dialog.close();
+                await loadProducts();
+            } catch (error) {
+                formError.textContent = error.message;
+                formError.hidden = false;
+            } finally {
+                saveButton.disabled = false;
+            }
+        });
+
+        loadProducts();
+    </script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+acceso.json
+inventario.json
+*.tmp
+__pycache__/

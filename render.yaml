@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: inventario
+    runtime: python
+    plan: starter
+    buildCommand: python -m py_compile app.py
+    startCommand: python app.py
+    healthCheckPath: /health
+    disk:
+      name: inventario-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: INVENTORY_DATA_DIR
+        value: /var/data
+      - key: INVENTORY_PASSWORD
+        sync: false

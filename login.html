@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f5f7fb">
+    <title>Iniciar sesión | Inventario</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="login-page">
+    <main class="login-card">
+        <a class="brand login-brand" href="/login" aria-label="Inventario">
+            <span class="brand-mark" aria-hidden="true">I</span>
+            <span>inventario<span class="brand-dot">.</span></span>
+        </a>
+        <p class="eyebrow">ACCESO PRIVADO</p>
+        <h1>Qué bueno verte</h1>
+        <p class="login-subtitle">Ingresa la contraseña compartida para acceder al inventario.</p>
+        <form id="login-form">
+            <label class="field">Contraseña
+                <input id="password" name="password" type="password" required minlength="12"
+                    maxlength="1024" autocomplete="current-password" placeholder="Escribe tu contraseña">
+            </label>
+            <div class="login-error" id="login-error" role="alert" hidden></div>
+            <button class="button button-primary login-button" id="login-submit" type="submit">Entrar al inventario</button>
+        </form>
+        <p class="login-footnote"><span class="status-dot"></span> Acceso reservado para el equipo</p>
+    </main>
+    <script>
+        const form = document.getElementById("login-form");
+        const error = document.getElementById("login-error");
+        const submit = document.getElementById("login-submit");
+
+        form.addEventListener("submit", async event => {
+            event.preventDefault();
+            error.hidden = true;
+            submit.disabled = true;
+            try {
+                const response = await fetch("/api/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ password: document.getElementById("password").value })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || "No se pudo iniciar sesión.");
+                window.location.assign("/");
+            } catch (loginError) {
+                error.textContent = loginError.message;
+                error.hidden = false;
+                submit.disabled = false;
+            }
+        });
+
+        document.getElementById("password").focus();
+    </script>
+</body>
+</html>
